@@ -2,44 +2,147 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>My Watchlist</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <title>🎬 My Watchlist</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Inline CSS -->
+  <style>
+    /* Reset */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Roboto', sans-serif; background:linear-gradient(135deg,#0f0f0f,#1a1a1a); color:#f5f5f5; }
+
+    /* Header */
+    header {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:20px 40px; background:rgba(31,31,31,0.95); backdrop-filter:blur(10px);
+      position:sticky; top:0; z-index:100; box-shadow:0 2px 10px rgba(0,0,0,0.5);
+    }
+    header h1 { font-size:2rem; color:#ff3d3d; letter-spacing:1px; text-transform:uppercase; }
+    nav ul { display:flex; gap:20px; list-style:none; flex-wrap:wrap; }
+    nav a { color:#ccc; font-weight:600; transition:color 0.3s, transform 0.3s; text-decoration:none; }
+    nav a:hover, nav a.active { color:#ff3d3d; transform:scale(1.05); }
+
+    /* Search */
+    .search { margin:30px auto; text-align:center; }
+    #searchForm { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
+    #searchInput {
+      width:60%; max-width:400px; padding:12px 20px; border-radius:30px;
+      border:1px solid #333; outline:none; background:#1f1f1f; color:#fff;
+      font-size:1rem; transition: all 0.3s; box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+    }
+    #searchInput:focus { border-color:#ff3d3d; box-shadow:0 0 15px rgba(255,61,61,0.6); }
+    #searchForm button {
+      padding:12px 20px; border:none; border-radius:30px; background:#ff3d3d; color:#fff;
+      font-weight:bold; cursor:pointer; transition: transform 0.3s, background 0.3s;
+    }
+    #searchForm button:hover { transform:scale(1.05); background:#e63636; }
+
+    /* Grid Cards */
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:25px; padding:25px; }
+    .card {
+      position:relative; overflow:hidden; border-radius:15px; cursor:pointer;
+      box-shadow:0 10px 20px rgba(0,0,0,0.6); transition: transform 0.3s, box-shadow 0.3s; background:#1f1f1f;
+    }
+    .card img { width:100%; display:block; aspect-ratio:2/3; transition: transform 0.3s; border-radius:15px 15px 0 0; }
+    .card:hover img { transform:scale(1.08); }
+    .card .overlay {
+      position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.95));
+      color:#fff; padding:15px 20px; opacity:0; transition:opacity 0.3s;
+    }
+    .card:hover .overlay { opacity:1; }
+    .card .overlay h2 { font-size:1.1rem; margin-bottom:5px; font-weight:700; }
+    .card .overlay p { font-size:0.85rem; height:45px; overflow:hidden; color:#ccc; }
+    .card .rating { color:#ffcc00; font-size:0.9rem; margin-top:5px; }
+    .card:hover { transform:translateY(-5px); box-shadow:0 15px 25px rgba(0,0,0,0.8); }
+
+    /* Responsive */
+    @media(max-width:1024px){ .grid{ grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); } }
+    @media(max-width:768px){ #searchInput{ width:80%; } header h1{ font-size:1.7rem; } }
+    @media(max-width:480px){ .grid{ grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); } nav ul{ justify-content:center; gap:10px; } #searchInput{ width:90%; } }
+  </style>
 </head>
 <body>
   <header>
     <h1>🎬 My Watchlist</h1>
     <nav>
       <ul>
-        <li><a href="pages/movies.html">Movies</a></li>
-        <li><a href="pages/series.html">Series</a></li>
-        <li><a href="pages/anime.html">Anime</a></li>
-        <li><a href="pages/cartoons.html">Cartoons</a></li>
-        <li><a href="pages/books.html">Books</a></li>
+        <li><a href="#">Movies</a></li>
+        <li><a href="#">Series</a></li>
+        <li><a href="#">Anime</a></li>
+        <li><a href="#">Cartoons</a></li>
+        <li><a href="#">Books</a></li>
       </ul>
     </nav>
   </header>
 
-<main>
-  <section class="search">
-    <h2>🔍 Search My Watchlist</h2>
-    <form id="searchForm">
-      <input type="text" id="searchInput" placeholder="Search by title...">
-      <button type="submit">Search</button>
-    </form>
-    <div id="searchResults" class="grid"></div>
-  </section>
-</main>
+  <main>
+    <section class="search">
+      <h2>🔍 Search My Watchlist</h2>
+      <form id="searchForm">
+        <input type="text" id="searchInput" placeholder="Search by title...">
+        <button type="submit">Search</button>
+      </form>
+      <div id="searchResults" class="grid"></div>
+    </section>
+  </main>
 
-  <script src="js/script.js"></script>
+  <!-- Inline JS -->
   <script>
-    // সব ক্যাটেগরির json থেকে সার্চ করার জন্য লোড
-    loadAllForSearch([
-      "data/movies.json",
-      "data/series.json",
-      "data/anime.json",
-      "data/cartoons.json",
-      "data/books.json"
-    ]);
+    const apiKey = "80c2a42";
+
+    async function fetchMovie(id) {
+      try {
+        const res = await fetch(\`https://www.omdbapi.com/?i=\${id}&apikey=\${apiKey}\`);
+        const data = await res.json();
+        return data.Response === "True" ? data : null;
+      } catch(err) { console.error("Error fetching movie:", id, err); return null; }
+    }
+
+    function renderCard(movie, container){
+      const div = document.createElement("div");
+      div.classList.add("card");
+      div.innerHTML = \`
+        <img src="\${movie.Poster}" alt="\${movie.Title}">
+        <div class="overlay">
+          <h2>\${movie.Title} (\${movie.Year})</h2>
+          <p>\${movie.Plot}</p>
+          <div class="rating">⭐ \${movie.imdbRating || "N/A"}</div>
+        </div>
+      \`;
+      container.appendChild(div);
+    }
+
+    async function searchItems(query){
+      if(!query) return;
+      const categories = ["data/movies.json","data/series.json","data/anime.json","data/cartoons.json","data/books.json"];
+      const container = document.getElementById("searchResults");
+      container.innerHTML = "<p>Searching...</p>";
+      let found = false;
+      for(const cat of categories){
+        try{
+          const res = await fetch(cat);
+          const ids = await res.json();
+          const movies = await Promise.all(ids.map(fetchMovie));
+          movies.forEach(m=>{
+            if(m && m.Title.toLowerCase().includes(query.toLowerCase())){
+              if(!found) container.innerHTML="";
+              renderCard(m, container);
+              found=true;
+            }
+          });
+        }catch(err){ console.error("Error searching category:", cat, err); }
+      }
+      if(!found) container.innerHTML="<p>No results found.</p>";
+    }
+
+    document.addEventListener("DOMContentLoaded", ()=>{
+      const form = document.getElementById("searchForm");
+      form.addEventListener("submit", e=>{
+        e.preventDefault();
+        const query=document.getElementById("searchInput").value.trim();
+        searchItems(query);
+      });
+    });
   </script>
 </body>
 </html>
