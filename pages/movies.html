@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Movies - My Watchlist</title>
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+  <header>
+    <h1>🎬 My Watchlist</h1>
+    <nav>
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="movies.html" class="active">Movies</a></li>
+        <li><a href="series.html">Series</a></li>
+        <li><a href="anime.html">Anime</a></li>
+        <li><a href="cartoons.html">Cartoons</a></li>
+        <li><a href="books.html">Books</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div id="list" class="grid"></div>
+  </main>
+
+  <script src="../js/script.js"></script>
+  <script>
+    loadCategory("../data/movies.json");
+  </script>
+</body>
+</html>
